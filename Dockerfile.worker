@@ -1,0 +1,18 @@
+# Dockerfile for Temporal Worker
+
+# Use a Python base image
+FROM python:3.13-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy necessary files for the worker
+COPY requirements.txt .
+COPY temporal_worker.py .
+COPY temporal_activity.py .
+
+# Install the required dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Entry point: Start the Temporal worker
+ENTRYPOINT ["python", "temporal_worker.py"]

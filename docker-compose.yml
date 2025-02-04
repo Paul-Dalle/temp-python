@@ -1,0 +1,42 @@
+
+services:
+  # Temporal server (to run Temporal service)
+  temporal-server:
+    image: "temporalio/server:latest"
+    container_name: temporal-server
+    environment:
+      - TEMPORAL_BROADCAST_ADDR=temporal-server:7233
+    ports:
+      - "7233:7233"  # Temporal's default port for communication
+    networks:
+      - temporal-network
+
+  # API Documentation Extractor (CLI-based service)
+  api-doc-extractor:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Dockerfile for the API Documentation Extractor
+    container_name: api-doc-extractor
+    environment:
+      - TEMPORAL_HOST=temporal-server:7233  # Pointing to Temporal service
+    networks:
+      - temporal-network
+    depends_on:
+      - temporal-server  # Ensures that temporal-server is up first
+
+  # Temporal worker service (to listen and handle activities)
+  api-doc-extractor-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker  # Dockerfile for Temporal worker
+    container_name: api-doc-extractor-worker
+    environment:
+      - TEMPORAL_HOST=temporal-server:7233  # Pointing to Temporal service
+    networks:
+      - temporal-network
+    depends_on:
+      - temporal-server  # Ensures that temporal-server is up first
+
+networks:
+  temporal-network:
+    driver: bridge
